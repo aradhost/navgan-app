@@ -1,0 +1,71 @@
+name: Build NavganBar Release APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies & Sync
+        run: |
+          npm install
+          npx cap sync android
+
+      - name: Generate Keystore on GitHub
+        run: |
+          keytool -genkeypair -v \
+            -keystore android/app/navganbar.keystore \
+            -alias navganbar \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass "NavganBar1405@@" \
+            -keypass "NavganBar1405@@" \
+            -dname "CN=NavganBar, OU=App, O=NavganBar, L=Tehran, ST=Tehran, C=IR"
+
+      - name: Make Gradle Executable
+        run: chmod +x android/gradlew
+
+      - name: Build Android Release APK
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Sign APK File
+        run: |
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks android/app/navganbar.keystore \
+            --ks-key-alias navganbar \
+            --ks-pass pass:"NavganBar1405@@" \
+            --key-pass pass:"NavganBar1405@@" \
+            --out android/app/build/outputs/apk/release/navganbar-release-signed.apk \
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NavganBar-Release-APK
+          path: android/app/build/outputs/apk/release/navganbar-release-signed.apk
+
+      - name: Upload Keystore Backup (Important)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NavganBar-Keystore-Backup
+          path: android/app/navganbar.keystore
