@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?????? ???</title>
+    <style>
+        body, html { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family: Tahoma, sans-serif; background-color: #0f172a; color: #fff; }
+        #app-frame { width:100%; height:100%; border:none; display:block; }
+        #offline-screen {
+            display:none; position:fixed; inset:0; background:#0f172a;
+            align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px;
+        }
+        .btn { background:#2563eb; color:#fff; border:none; padding:12px 24px; border-radius:12px; font-weight:bold; cursor:pointer; margin-top:16px; font-size:14px; }
+    </style>
+</head>
+<body>
+    <iframe id="app-frame" src="https://navganbar.com/?app=true"></iframe>
+
+    <div id="offline-screen">
+        <div style="font-size:48px; margin-bottom:12px;">??</div>
+        <h3 style="margin: 0 0 8px 0;">??? ?????? ?? ???????</h3>
+        <p style="color:#94a3b8; font-size:14px; margin: 0;">????? ????? ??????? ???? ??? ?? ????? ????.</p>
+        <button class="btn" onclick="retryConnection()">???? ????</button>
+    </div>
+
+    <script>
+        function checkNetwork() {
+            if (!navigator.onLine) {
+                document.getElementById('offline-screen').style.display = 'flex';
+                document.getElementById('app-frame').style.display = 'none';
+            } else {
+                document.getElementById('offline-screen').style.display = 'none';
+                document.getElementById('app-frame').style.display = 'block';
+            }
+        }
+        function retryConnection() {
+            const frame = document.getElementById('app-frame');
+            frame.src = "https://navganbar.com/?app=true&t=" + Date.now();
+            checkNetwork();
+        }
+        window.addEventListener('offline', checkNetwork);
+        window.addEventListener('online', checkNetwork);
+        checkNetwork();
+    </script>
+</body>
+</html>
